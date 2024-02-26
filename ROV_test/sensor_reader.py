@@ -17,11 +17,15 @@ class SensorReader(Node):
             serial_data = self.serial_port.readline().decode('utf-8').rstrip()
             try:
                 # Splitting the comma-separated values
-                tension, pressure = map(float, serial_data.split(','))
+                pressure, tension, current, t_ext, t_bat, t_esc, leak, q0, q1, q2, q3, d_sonar = map(float, serial_data.split(';'))
                 msg = Float32MultiArray()
-                msg.data = [tension, pressure]
+                msg.data = [pressure, tension, current, t_ext, t_bat, t_esc, leak, q0, q1, q2, q3, d_sonar]
                 self.publisher_.publish(msg)
-                self.get_logger().info(f'Publishing Tension: {tension} and Pressure: {pressure}')
+                self.get_logger().info(
+                f'Pressure: {pressure} atm, Tension: {tension} V, Current: {current} mA, '
+                f'External Temp: {t_ext} °C, Battery Temp: {t_bat} °C, ESC Temp: {t_esc} °C, '
+                f'Leak: {leak}, Quaternion: ({q0}, {q1}, {q2}, {q3}), Sonar Distance: {d_sonar} m'
+            )
             except ValueError as e:
                 self.get_logger().error('Received invalid data: ' + str(e))
 

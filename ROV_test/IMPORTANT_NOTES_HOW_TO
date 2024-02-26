@@ -17,21 +17,46 @@ to check if no other program (ex platform io) is using the port use "lsof | grep
 
 ---STRUCTURE---
 
+SENSOR
 the node sensor_reader send the sensor values to the topic sensor_values
 the node sensor_display display to ? the sensor values from the topic sensor_values
-the topic sensor_values is a message of the type Float32MultiArray (pressure,tension,...??)
-the esp32 send via the serial a string with float separeted by a , ending with /n
+the topic sensor_values is a message of the type Float32MultiArray (pressure,tension,..)
+the esp32 send via the serial a string with float separeted by a ; ending with /n
 
+
+
+MOTOR
 the node motor_light_sender send the commands from the topic motor_commands to the esp32
-the esp32 read 10 foats that represent the commands for motor0 to motor7 (ranging from -1 to 1)
- and the states for light_floor and light_front (ranging from 0 to 1).
+the esp32 read 11 foats that represent the commands for motor1 to motor8 (ranging from -1 to 1)
+ and the states for light_floor and light_front (ranging from 0 to 1) and servo (-1 to 1)
 the topic motor_commands is a msg of the type Twist (3 translations + 3 rotations  of the ROV)
 you can send commands via the node motor_control_keyboard 
+
+
+ESP32
+baudrate is 115200
+it sends sensor values every 50ms via the serial a string with float separeted by a ; ending with /n
+"pressure (atm);tension (V);current (mA);t_ext (°C),t_bat;t_esc;leak (0-1);q0;q1;q2;q3;d_sonar(m)/n"
+reads motor command all time (if not reveive >1s turn off the motors)
+on the screen display alternativly the motor commands and the sensor values
+
+
+MOTOR MAPPING
+   ^
+   x
+<--y
+
+M1           M2
+    M5  M6
+    M8  M7
+M4           M3
 
 
 todo : 
 modify the  motor_light_sender so i can swith the light with a service??
 modify the motor_light_sender so it modify the twist from the topic motor_commands to motor values -1 to 1
+need to check the frequency to send the sensor values
+display
 
 
 
