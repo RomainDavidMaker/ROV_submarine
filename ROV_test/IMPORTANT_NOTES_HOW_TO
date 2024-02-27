@@ -8,6 +8,8 @@ check the serial port of the esp :
 l'esp doit etre present dans avec "ls /dev/ttyUSB0"
 otherwise go to parameter of the virtual box, usb add the usb device to the virtual box
 
+to check envi:
+env | grep ROS
 
 if Permission denied: '/dev/ttyUSB0'  when lucnhing the py program use this to give access to the esp32 :
 sudo lsof /dev/ttyUSB0
@@ -16,6 +18,8 @@ to check if no other program (ex platform io) is using the port use "lsof | grep
 
 
 ---STRUCTURE---
+
+using ros2 humble version and python3
 
 SENSOR
 the node sensor_reader send the sensor values to the topic sensor_values
@@ -54,9 +58,8 @@ M4           M3
 
 todo : 
 modify the  motor_light_sender so i can swith the light with a service??
-modify the motor_light_sender so it modify the twist from the topic motor_commands to motor values -1 to 1
 need to check the frequency to send the sensor values
-display
+
 
 
 
