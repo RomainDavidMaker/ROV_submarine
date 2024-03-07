@@ -2,7 +2,6 @@
 
 
 25/02/24
-test de ros avec un esp
 
 check the serial port of the esp :
 l'esp doit etre present dans avec "ls /dev/ttyUSB0"
@@ -55,10 +54,6 @@ M1           M2
     M8  M7
 M4           M3
 
-
-todo : 
-modify the  motor_light_sender so i can swith the light with a service??
-need to check the frequency to send the sensor values
 
 
 
