@@ -7,7 +7,7 @@ check the serial port of the esp :
 l'esp doit etre present dans avec "ls /dev/ttyUSB0"
 otherwise go to parameter of the virtual box, usb add the usb device to the virtual box
 
-to check envi:
+to check env:
 env | grep ROS
 
 if Permission denied: '/dev/ttyUSB0'  when lucnhing the py program use this to give access to the esp32 :
@@ -25,7 +25,7 @@ the node sensor_reader send the sensor values to the topic sensor_values
 the node sensor_display display to ? the sensor values from the topic sensor_values
 the topic sensor_values is a message of the type Float32MultiArray (pressure,tension,..)
 the esp32 send via the serial a string with float separeted by a ; ending with /n
-
+the node user_interface crate a tkinter interface that display the sensor data and motor positions
 
 
 MOTOR
@@ -47,7 +47,7 @@ on the screen display alternativly the motor commands and the sensor values
 MOTOR MAPPING
    ^
    x
-<--y
+<--y z is up
 
 M1           M2
     M5  M6
