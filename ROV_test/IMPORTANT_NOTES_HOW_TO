@@ -16,6 +16,21 @@ sudo lsof /dev/ttyUSB0
 to check if no other program (ex platform io) is using the port use "lsof | grep /dev/ttyUSB0"
 
 
+---use git---
+
+to retrieve changes from the remote repository
+git fetch
+
+to add new folders
+git add .
+
+to update the modification done to the local git folder
+git commit -b "comment"
+
+to apply the modification of the last commit to the remote github branch_ros, use as a pwr the token
+git push origin branch_ros
+
+
 ---STRUCTURE---
 
 using ros2 humble version and python3

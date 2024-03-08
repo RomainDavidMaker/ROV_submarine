@@ -7,8 +7,8 @@ import select
 import termios
 import tty
 
-default_linear_velocity = .1    #propotional to motor control 1:full forward
-default_angular_velocity = .2
+default_linear_velocity = .8    #propotional to motor control 1:full forward
+default_angular_velocity = .4
 
 class MotorControlKeyboard(Node):
     def __init__(self):
