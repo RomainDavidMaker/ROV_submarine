@@ -52,20 +52,23 @@ the esp32 send via the serial a string with float separeted by a ; ending with /
 the node user_interface crate a tkinter interface that display the sensor data and motor positions
 
 
-- The node motor_light_sender send the commands from the topic motor_commands to the esp32
+- The node motor_light_sender send the commands to the esp32 from the topic command_motor 
 - The esp32 read 11 foats that represent the commands for motor1 to motor8 (ranging from -1 to 1) and the states for light_floor and light_front (ranging from 0 to 1) and servo (-1 to 1)
-- The topic motor_commands is a msg of the type Twist (3 translations + 3 rotations  of the ROV). This topic is general, any node can send at Twist to this topic that will be transform is motor commands by the node motor_light_sender
-- The node *motor_*control_keyboard takes keyboard input and send a twist command
-- the node control_joystick take input from a ps4 controler to pusblish a twist 
+- The topic command_motor is a msg of the type Twist (3 translations + 3 rotations  of the ROV). This topic is general, any node can send at Twist to this topic that will be transform is motor commands by the node motor_light_sender
+- The node control_keyboard takes keyboard input and send a twist to the topic command
+- the node control_joystick take input from a ps4 controler to pusblish a twist to the topic command
 
-Between the control_* node and the topic motor_command, we can add a stabilisation control:
+For controlling the light:
+-the control_* node send a Float32MultiArray[2] to the topic control_light read by the node motor_light_sender 
 
+Between the control_* node and the topic command_motor, we can add a stabilisation control:
 
 The orientation of the rov is represented by a quaternion called q.
 A target orientation called q_target is set for the control.
 The node control_PID  takes the q_target and q in order to apply a command to the node motor_light_sender to reach the orientation q. This node takes as input a TWist command (from the keyboard or the joystick) and publish a twist command.
 
-I can have 2 types of control like in betaflight :
+I can have 3 types of control like in betaflight :
+- direct mode : no stabilisation forward the command to the command motor
 - angle mode : the rate of rotation of q_target is proportional to the joystick command
 - horizon mode :  the angle of q_target is proportional to the joystick command, when the joystick is release, the rov return to an horizontal orientation
 

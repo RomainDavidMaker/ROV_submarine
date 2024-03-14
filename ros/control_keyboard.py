@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32MultiArray
 import sys
 import select
 import termios
@@ -12,12 +12,12 @@ default_angular_velocity = .4
 
 class MotorControlKeyboard(Node):
     def __init__(self):
-        super().__init__('motor_control_keyboard')
-        self.publisher_ = self.create_publisher(Twist, 'motor_commands', 10)
-        self.light_publisher = self.create_publisher(Float32, 'light_front_control', 10)
+        super().__init__('control_keyboard')
+        self.publisher_ = self.create_publisher(Twist, 'command', 10)
+        self.light_publisher = self.create_publisher(Float32MultiArray, 'control_light', 10)
         self.timer = self.create_timer(0.1, self.timer_callback)
         self.settings = termios.tcgetattr(sys.stdin)
-        self.light_state = 0.0  # Initial state of the light (off)
+        self.light_state = [0.0, 0.0]  #  two lights, initially off
 
         # Velocity parameters
         self.linear_velocity = self.declare_parameter('linear_velocity', default_linear_velocity).value
@@ -36,7 +36,7 @@ class MotorControlKeyboard(Node):
     def timer_callback(self):
         key = self.read_key()
         twist = Twist()
-        light_msg = Float32()
+        light_msg = Float32MultiArray()
 
         # Key mappings
         if key == 'z':            # forward
@@ -56,8 +56,10 @@ class MotorControlKeyboard(Node):
         elif key == 'm':          # turn right
             twist.angular.z = -self.angular_velocity
 
-        if key == ' ':            # toggle the light
-            self.light_state = 1.0 - self.light_state
+        # Key mapping for light toggle
+        if key == ' ':            # toggle the lights
+            self.light_state[0] = 1.0 - self.light_state[0]
+            self.light_state[1] = 1.0 - self.light_state[1]
             light_msg.data = self.light_state
             self.light_publisher.publish(light_msg)
 

@@ -1,20 +1,17 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32
+from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import Twist
 import serial
+
 
 class MotorLightSender(Node):
     def __init__(self):
         super().__init__('motor_light_sender')
         self.rov_command_subscriber = self.create_subscription(
-            Twist, 'motor_commands', self.rov_command_callback, 10)
-        self.light_floor_subscriber = self.create_subscription(
-            Float32, 'light_floor_control', self.light_floor_control_callback, 10)
-        self.light_front_subscriber = self.create_subscription(
-            Float32, 'light_front_control', self.light_front_control_callback, 10)
-        self.servo_subscriber = self.create_subscription(
-            Float32, 'servo_control', self.servo_control_callback, 10)
+            Twist, 'command_motor', self.rov_command_callback, 10)
+        self.light_control_subscriber = self.create_subscription(
+            Float32MultiArray, 'control_light', self.light_control_callback, 10)
         self.serial_port = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
         self.commands = [0.0] * 11  # Initialize array for 8 motors + 2 lights + 1 servo
 
@@ -71,16 +68,14 @@ class MotorLightSender(Node):
 
         return motor_commands
 
-    def light_floor_control_callback(self, msg):
-        self.commands[8] = msg.data
-        self.send_serial_data()
-
-    def light_front_control_callback(self, msg):
-        self.commands[9] = msg.data
-        self.send_serial_data()
-    def servo_control_callback(self, msg):
-        self.commands[10] = msg.data
-        self.send_serial_data()
+    def light_control_callback(self, msg):
+        if len(msg.data) >= 2:
+            # Update the light commands based on the Float32MultiArray
+            self.commands[8] = msg.data[0]  # First light control
+            self.commands[9] = msg.data[1]  # Second light control
+            self.send_serial_data()
+        else:
+            self.get_logger().warn('Received less than 2 values for light control')
 
     def send_serial_data(self):
         data_str = ';'.join(map(str, self.commands)) + '\n'
