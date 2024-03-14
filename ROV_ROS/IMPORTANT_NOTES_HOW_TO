@@ -1,23 +1,32 @@
 
 
+Install ROS2 Humble :
+https://docs.ros.org/en/humble/Installation.html
 
-25/02/24
+Install package for the camera raspicam :
+https://medium.com/swlh/raspberry-pi-ros-2-camera-eef8f8b94304
+it took 1H10 for colcon build on the raspberry 3B+
+to launch a node: ros2 run v4l2_camera v4l2_camera_node
+to watch the camera: ros2 run rqt_image_view rqt_image_view
+to watch the camera in ssh use -X: ssh -X pi@IP
 
-check the serial port of the esp :
-l'esp doit etre present dans avec "ls /dev/ttyUSB0"
-otherwise go to parameter of the virtual box, usb add the usb device to the virtual box
-
-to check env:
+to check the environment ROS:
 env | grep ROS
+
+
+check the usb connexion with the ESP32 :
+l'esp must appear with the command "ls /dev/ttyUSB0"
+otherwise go to parameter of the virtual box, usb add the usb device to the virtual box
 
 if Permission denied: '/dev/ttyUSB0'  when lucnhing the py program use this to give access to the esp32 :
 sudo lsof /dev/ttyUSB0
-
 to check if no other program (ex platform io) is using the port use "lsof | grep /dev/ttyUSB0"
+
 
 
 ---use git---
 
+use the token as the password for identification when pull
 to retrieve changes from the remote repository
 git fetch
 
