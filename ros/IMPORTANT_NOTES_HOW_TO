@@ -1,0 +1,177 @@
+
+
+Install ROS2 Humble :
+https://docs.ros.org/en/humble/Installation.html
+
+Install package for the camera raspicam :
+https://medium.com/swlh/raspberry-pi-ros-2-camera-eef8f8b94304
+it took 1H10 for colcon build on the raspberry 3B+
+to launch a node: ros2 run v4l2_camera v4l2_camera_node
+to watch the camera: ros2 run rqt_image_view rqt_image_view
+to watch the camera in ssh use -X: ssh -X pi@IP
+
+to check the environment ROS:
+env | grep ROS
+
+
+check the usb connexion with the ESP32 :
+l'esp must appear with the command "ls /dev/ttyUSB0"
+otherwise go to parameter of the virtual box, usb add the usb device to the virtual box
+
+if Permission denied: '/dev/ttyUSB0'  when lucnhing the py program use this to give access to the esp32 :
+sudo lsof /dev/ttyUSB0
+to check if no other program (ex platform io) is using the port use "lsof | grep /dev/ttyUSB0"
+
+
+
+---use git---
+
+use the token as the password for identification when pull
+to retrieve changes from the remote repository
+git fetch
+
+to add new folders
+git add .
+
+to update the modification done to the local git folder
+git commit -b "comment"
+
+to apply the modification of the last commit to the remote github branch_ros, use as a pwr the token
+git push origin branch_ros
+
+
+---STRUCTURE---
+
+using ros2 humble version and python3
+
+SENSOR
+the node sensor_reader send the sensor values to the topic sensor_values
+the node sensor_display display to ? the sensor values from the topic sensor_values
+the topic sensor_values is a message of the type Float32MultiArray (pressure,tension,..)
+the esp32 send via the serial a string with float separeted by a ; ending with /n
+the node user_interface crate a tkinter interface that display the sensor data and motor positions
+
+
+- The node motor_light_sender send the commands from the topic motor_commands to the esp32
+- The esp32 read 11 foats that represent the commands for motor1 to motor8 (ranging from -1 to 1) and the states for light_floor and light_front (ranging from 0 to 1) and servo (-1 to 1)
+- The topic motor_commands is a msg of the type Twist (3 translations + 3 rotations  of the ROV). This topic is general, any node can send at Twist to this topic that will be transform is motor commands by the node motor_light_sender
+- The node *motor_*control_keyboard takes keyboard input and send a twist command
+- the node control_joystick take input from a ps4 controler to pusblish a twist 
+
+Between the control_* node and the topic motor_command, we can add a stabilisation control:
+
+
+The orientation of the rov is represented by a quaternion called q.
+A target orientation called q_target is set for the control.
+The node control_PID  takes the q_target and q in order to apply a command to the node motor_light_sender to reach the orientation q. This node takes as input a TWist command (from the keyboard or the joystick) and publish a twist command.
+
+I can have 2 types of control like in betaflight :
+- angle mode : the rate of rotation of q_target is proportional to the joystick command
+- horizon mode :  the angle of q_target is proportional to the joystick command, when the joystick is release, the rov return to an horizontal orientation
+
+A parameter is needed to set the type of stabilisation of the node control_PID.
+
+
+need to add a deadband for the motor control?
+
+
+
+MOTOR
+the node motor_light_sender send the commands from the topic motor_commands to the esp32
+the esp32 read 11 foats that represent the commands for motor1 to motor8 (ranging from -1 to 1)
+ and the states for light_floor and light_front (ranging from 0 to 1) and servo (-1 to 1)
+the topic motor_commands is a msg of the type Twist (3 translations + 3 rotations  of the ROV)
+you can send commands via the node motor_control_keyboard 
+
+
+ESP32
+baudrate is 115200
+it sends sensor values every 50ms via the serial a string with float separeted by a ; ending with /n
+"pressure (atm);tension (V);current (mA);t_ext (°C),t_bat;t_esc;leak (0-1);q0;q1;q2;q3;d_sonar(m)/n"
+reads motor command all time (if not reveive >1s turn off the motors)
+on the screen display alternativly the motor commands and the sensor values
+
+need to add a function check_errors() that need to be called at each loop iteration.
+type of erros :
+- Voltage < VOLTAGE_LOW : flash the light and turn of the motors ?
+- time last data received > 1s motor command to 0, display a message
+
+
+MOTOR MAPPING
+   ^
+   x
+<--y z is up
+
+M1           M2
+    M5  M6
+    M8  M7
+M4           M3
+
+
+
+
+
+
+How to connect the raspberry running ubunutu to the computer via an ethernet cable:
+
+Using the computer go to the wired settings
+go to IPv4 tab
+change to manual
+set IP adress to 192.168.1.1 etmask: 255.255.255.0 no need of gateway?
+
+
+for the pi running ubuntu :
+need to edit the Netplan configuration file located in /etc/netplan/. Usually, you'll find a file like 50-cloud-init.yaml or 01-netcfg.yaml
+
+Adjust the configuration to use :
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eth0:
+      dhcp4: no
+      addresses:
+        - 192.168.1.2/24
+      routes:
+        - to: default
+          via: 192.168.1.1
+          
+apply the Netplan configuration again
+sudo netplan apply
+
+Try pinging your Ubuntu computer from the Raspberry Pi to ensure the network is configured correctly: ping 192.168.1.1
+
+
+
+Set Up ROS2 Humble Environment on Both Devices:
+
+check this tutorial https://roboticsbackend.com/ros2-multiple-machines-including-raspberry-pi/
+
+some basic steps:
+get the IP address of each machine inside the network by running 'hostname -I'
+Try pinging to check the connecion
+The ROS_DOMAIN_ID is an environment variable that defines the DDS (Data Distribution Service) communication domain. ROS2 nodes will only communicate with other nodes in the same domain.
+Choose a domain ID (any number between 0 and 255). Ensure you use the same ID on both your Ubuntu computer and Raspberry Pi.
+
+set the same ROS_DOMAIN_ID to 30 on both computers:
+echo "export ROS_DOMAIN_ID=30" >> ~/.bashrc
+source ~/.bashrc
+
+then check th ROS environment variables:
+printenv | grep ROS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
