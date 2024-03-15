@@ -1,6 +1,6 @@
 #include "main.h"
 
-float motors_position[8] = {0.0};  //position motor between -1 reverse, 0 stop ,1 forward
+float motors_position[11] = {0.0};  //position 8 motor between -1 reverse, 0 stop ,1 forward, light front [0-1], light back, servo [-1-1]
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1); // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 BNO080 IMU;
@@ -103,6 +103,11 @@ void send_pos_motors_to_esc(){
 
 }
 
+void set_lights(){
+  digitalWrite(led1_pin,int(motors_position[9]));
+  digitalWrite(led2_pin,int(motors_position[10]));
+}
+
 void send_test_esc() {
 
 	int16_t milliswrap = sin(millis()*2/SINE_DURATION*PI)*100;
@@ -125,8 +130,6 @@ void setup() {
   pinMode(led1_pin, OUTPUT);
   pinMode(led2_pin, OUTPUT);
   digitalWrite(fan_pin,LOW);
-  digitalWrite(led1_pin,HIGH);
-  digitalWrite(led2_pin,HIGH);
 
   setup_esc();
   setup_screen();
@@ -139,10 +142,11 @@ void loop() {
   read_analog_input();
   read_IMU();
   read_motor_position();
+  set_lights();
   if (millis() - t > send_rate_ms) {
     send_sensor_values();
-    //if(t%6000 <4500) display_motors();
-    //else display_sensors();
+    if(t%6000 <3000) display_motors();
+    else display_sensors();
     display_motors();
     t = millis();
   }
@@ -174,7 +178,7 @@ void read_motor_position() {
         String inputString = Serial.readStringUntil('\n'); // Read the string until newline character
         int lastIndex = 0;
         int index = 0;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 11; i++) {
             index = inputString.indexOf(';', lastIndex); // Find the next delimiter
             if (index == -1) {
                 index = inputString.length(); // If no more delimiters, take till end of string

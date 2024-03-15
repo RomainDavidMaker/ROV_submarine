@@ -24,7 +24,7 @@ to check if no other program (ex platform io) is using the port use "lsof | grep
 
 
 
----use git---
+## ---use git---
 
 use the token as the password for identification when pull
 to retrieve changes from the remote repository
@@ -40,18 +40,22 @@ to apply the modification of the last commit to the remote github branch_ros, us
 git push origin branch_ros
 
 
----STRUCTURE---
+##  ---STRUCTURE---
 
 using ros2 humble version and python3
 
-SENSOR
+check the drawing on google drive 
+![alt text](graph.png)
+
+
+### SENSOR
 the node sensor_reader send the sensor values to the topic sensor_values
 the node sensor_display display to ? the sensor values from the topic sensor_values
 the topic sensor_values is a message of the type Float32MultiArray (pressure,tension,..)
 the esp32 send via the serial a string with float separeted by a ; ending with /n
 the node user_interface crate a tkinter interface that display the sensor data and motor positions
 
-
+### motor and light
 - The node motor_light_sender send the commands to the esp32 from the topic command_motor 
 - The esp32 read 11 foats that represent the commands for motor1 to motor8 (ranging from -1 to 1) and the states for light_floor and light_front (ranging from 0 to 1) and servo (-1 to 1)
 - The topic command_motor is a msg of the type Twist (3 translations + 3 rotations  of the ROV). This topic is general, any node can send at Twist to this topic that will be transform is motor commands by the node motor_light_sender
@@ -61,6 +65,7 @@ the node user_interface crate a tkinter interface that display the sensor data a
 For controlling the light:
 -the control_* node send a Float32MultiArray[2] to the topic control_light read by the node motor_light_sender 
 
+### stabilization
 Between the control_* node and the topic command_motor, we can add a stabilisation control:
 
 The orientation of the rov is represented by a quaternion called q.
