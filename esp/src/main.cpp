@@ -147,7 +147,6 @@ void loop() {
     send_sensor_values();
     if(t%6000 <3000) display_motors();
     else display_sensors();
-    display_motors();
     t = millis();
   }
 }

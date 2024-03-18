@@ -4,7 +4,7 @@
 #include "DShotESC.h"
 
 #define baud_rate 115200
-#define send_rate_ms 100
+#define send_rate_ms 50
 
 //pin definition
 #define current_pin 36
@@ -48,16 +48,16 @@ M4           M3
 #define SCREEN_HEIGHT 64
 
 
-#define ESC_MAX 100  //max command to the motor 0 to 999
+#define ESC_MAX 160  //max command to the motor 0 to 999
 
-#define ESC1_REVERSE false  //change the motor direction
-#define ESC2_REVERSE false
+#define ESC1_REVERSE true  //change the motor direction
+#define ESC2_REVERSE true
 #define ESC3_REVERSE false
-#define ESC4_REVERSE false
-#define ESC5_REVERSE false
-#define ESC6_REVERSE false
+#define ESC4_REVERSE true
+#define ESC5_REVERSE true
+#define ESC6_REVERSE true
 #define ESC7_REVERSE false
-#define ESC8_REVERSE false
+#define ESC8_REVERSE true
 
 
 void setup_screen();

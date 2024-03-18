@@ -115,6 +115,12 @@ M1           M2
     M8  M7
 M4           M3
 
+MOTOR DIRECTION
+
+CCW          CW
+    CCW CW
+    CW  CCW 
+CW          CCW
 
 
 
@@ -131,7 +137,7 @@ set IP adress to 192.168.1.1 etmask: 255.255.255.0 no need of gateway?
 for the pi running ubuntu :
 need to edit the Netplan configuration file located in /etc/netplan/. Usually, you'll find a file like 50-cloud-init.yaml or 01-netcfg.yaml
 
-Adjust the configuration to use :
+'Adjust the configuration to use :
 network:
   version: 2
   renderer: networkd
@@ -142,10 +148,12 @@ network:
         - 192.168.1.2/24
       routes:
         - to: default
-          via: 192.168.1.1
+          via: 192.168.1.1'
           
 apply the Netplan configuration again
 sudo netplan apply
+
+NEED to be done at each boot???
 
 Try pinging your Ubuntu computer from the Raspberry Pi to ensure the network is configured correctly: ping 192.168.1.1
 
@@ -167,17 +175,6 @@ source ~/.bashrc
 
 then check th ROS environment variables:
 printenv | grep ROS
-
-
-
-
-
-
-
-
-
-
-
 
 
 
