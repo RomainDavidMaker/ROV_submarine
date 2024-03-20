@@ -5,6 +5,7 @@
 
 #define baud_rate 115200
 #define send_rate_ms 50
+#define screen_refresh_rate_ms 200
 
 //pin definition
 #define current_pin 36
@@ -22,8 +23,8 @@
 #define esc7_pin GPIO_NUM_17
 #define esc8_pin GPIO_NUM_27
 
-#define led1_pin 2
-#define led2_pin 12
+#define led1_pin 12
+#define led2_pin 2
 #define voltage_pin 13
 #define servo_pin 23
 #define SCL_pin 22
@@ -48,7 +49,7 @@ M4           M3
 #define SCREEN_HEIGHT 64
 
 
-#define ESC_MAX 160  //max command to the motor 0 to 999
+#define ESC_MAX 200  //max command to the motor 0 to 999
 
 #define ESC1_REVERSE true  //change the motor direction
 #define ESC2_REVERSE true

@@ -8,6 +8,7 @@ BNO080 IMU;
 float q0,q1,q2,q3 ; //quaternion real,i,j,k
 int a =0;
 unsigned long t = 0;  //used to send data at constant rate
+unsigned long t_screen = 0;  //used to refresh screen at constant rate
 
 float current;  //mA
 float voltage ; //voltage bat in V
@@ -104,8 +105,8 @@ void send_pos_motors_to_esc(){
 }
 
 void set_lights(){
-  digitalWrite(led1_pin,int(motors_position[9]));
-  digitalWrite(led2_pin,int(motors_position[10]));
+  digitalWrite(led1_pin,int(motors_position[8]));
+  digitalWrite(led2_pin,int(motors_position[9]));
 }
 
 void send_test_esc() {
@@ -145,9 +146,13 @@ void loop() {
   set_lights();
   if (millis() - t > send_rate_ms) {
     send_sensor_values();
+    t = millis();
+  }
+
+  if (millis() - t_screen > send_rate_ms) {
     if(t%6000 <3000) display_motors();
     else display_sensors();
-    t = millis();
+    t_screen = millis();
   }
 }
 
