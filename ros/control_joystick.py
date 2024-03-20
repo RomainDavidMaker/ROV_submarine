@@ -22,6 +22,21 @@ class JoystickControlNode(Node):
         self.last_x_pressed = False
         self.last_square_pressed = False
 
+        # Deadband threshold
+        self.threshold_deadband = 0.01 #at rest values for the joystick of +/-0.0078
+
+        #rate : change the command proportional to rate
+        # Rate parameter initialization
+        self.rate = 0.5  # Starting at a midpoint value
+        self.last_left_pressed = False
+        self.last_right_pressed = False
+
+    def deadband(self, value):
+        # If the absolute value is less than the threshold, return 0
+        if abs(value) < self.threshold_deadband:
+            return 0.0
+        return value
+
     def read_joystick(self):
         pygame.event.pump()
         twist = Twist()
@@ -29,6 +44,9 @@ class JoystickControlNode(Node):
         # Mapping joystick axes to Twist message fields
 
         """
+        ATTENTION THE CONTROLLER IS DETECTED AS A PS5 CONTROLLER
+        check https://www.pygame.org/docs/ref/joystick.html for mapping
+
         Left Stick Horizontal Axis: get_axis(0)
         Moves between -1 (left) and 1 (right).
 
@@ -59,18 +77,19 @@ class JoystickControlNode(Node):
             M8  M7
         M4           M3
         """
-
-        twist.linear.x = -self.joystick.get_axis(1)
-        twist.linear.y = -self.joystick.get_axis(0)
-        twist.linear.z = (self.joystick.get_axis(2)+1)/2.0 - (self.joystick.get_axis(5)+1)/2.0
-        twist.angular.x = self.joystick.get_axis(3)
-        twist.angular.y = -self.joystick.get_axis(4)
-        twist.angular.z = float(self.joystick.get_button(4)- self.joystick.get_button(5))
+        
+        # Apply deadband to joystick axes
+        twist.linear.x = self.rate * ( - self.deadband(self.joystick.get_axis(1)) )
+        twist.linear.y = self.rate * ( - self.deadband(self.joystick.get_axis(0)) )
+        twist.linear.z = self.rate * ( (self.deadband(self.joystick.get_axis(2))+1)/2.0 - (self.deadband(self.joystick.get_axis(5))+1)/2.0 )
+        twist.angular.x = self.rate * ( self.deadband(self.joystick.get_axis(3)) )
+        twist.angular.y = self.rate * ( - self.deadband(self.joystick.get_axis(4)) )
+        twist.angular.z = self.rate * ( float(self.joystick.get_button(4)- self.joystick.get_button(5)) )
         self.publisher_.publish(twist)
 
 
         # Light toggle logic for X button
-        x_pressed = self.joystick.get_button(0)  # Assuming button 0 is X
+        x_pressed = self.joystick.get_button(0)  #  button 0 is X
         if x_pressed and not self.last_x_pressed:
             self.light_state[0] = 1.0 if self.light_state[0] == 0.0 else 0.0  # Toggle first light
             self.last_x_pressed = True
@@ -89,6 +108,25 @@ class JoystickControlNode(Node):
         if x_pressed or square_pressed:
             light_msg = Float32MultiArray(data=self.light_state)
             self.light_publisher.publish(light_msg)
+
+        # Reading the D-pad (hat) for adjusting rate
+        d_pad = self.joystick.get_hat(0)  # Assuming the first hat is the D-pad
+
+        # Increase rate if D-pad right is pressed
+        if d_pad[0] == 1 and not self.last_right_pressed:
+            self.rate = min(1.0, self.rate + 0.1)
+            print("rate increased to: " + str(self.rate))
+            self.last_right_pressed = True
+        elif d_pad[0] != 1:
+            self.last_right_pressed = False
+
+        # Decrease rate if D-pad left is pressed
+        if d_pad[0] == -1 and not self.last_left_pressed:
+            self.rate = max(0.1, self.rate - 0.1)
+            print("rate decreased to: " + str(self.rate))
+            self.last_left_pressed = True
+        elif d_pad[0] != -1:
+            self.last_left_pressed = False
 
         
 

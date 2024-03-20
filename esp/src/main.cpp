@@ -10,6 +10,8 @@ int a =0;
 unsigned long t = 0;  //used to send data at constant rate
 unsigned long t_screen = 0;  //used to refresh screen at constant rate
 
+unsigned long t_last_command = 0;  //time the last command was receive
+
 float current;  //mA
 float voltage ; //voltage bat in V
 float pressure; //atm
@@ -154,6 +156,14 @@ void loop() {
     else display_sensors();
     t_screen = millis();
   }
+
+  if (millis() - t_last_command > max_time_serial_lost_ms) {  //if no data receive set motor position to 0
+    for(int i =0;i<8;i++){
+    motors_position[i] = 0;
+  }
+  }
+
+
 }
 
 
@@ -179,6 +189,7 @@ void setup_IMU(){
 
 void read_motor_position() {
     if (Serial.available() > 0) {
+        t_last_command = millis(); //reset timer
         String inputString = Serial.readStringUntil('\n'); // Read the string until newline character
         int lastIndex = 0;
         int index = 0;

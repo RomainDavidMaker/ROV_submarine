@@ -7,6 +7,8 @@
 #define send_rate_ms 50
 #define screen_refresh_rate_ms 200
 
+#define max_time_serial_lost_ms 500 //shut motors if no data receive after this delay
+
 //pin definition
 #define current_pin 36
 #define pressure_pin 39
@@ -49,7 +51,7 @@ M4           M3
 #define SCREEN_HEIGHT 64
 
 
-#define ESC_MAX 200  //max command to the motor 0 to 999
+#define ESC_MAX 250  //max command to the motor 0 to 999
 
 #define ESC1_REVERSE true  //change the motor direction
 #define ESC2_REVERSE true
