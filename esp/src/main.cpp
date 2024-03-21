@@ -6,10 +6,9 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1); // Declaration
 BNO080 IMU;
 
 float q0,q1,q2,q3 ; //quaternion real,i,j,k
-int a =0;
+int a =0;  //???
 unsigned long t = 0;  //used to send data at constant rate
 unsigned long t_screen = 0;  //used to refresh screen at constant rate
-
 unsigned long t_last_command = 0;  //time the last command was receive
 
 float current;  //mA
@@ -22,7 +21,7 @@ float sonar_distance;  //cm
 
 
 
-#define PEAKSPEED 100
+#define PEAKSPEED 100  //for esc
 #define SINE_DURATION 10000.f //duration of the full cycle, in millis
 
 DShotESC esc1;
@@ -87,7 +86,7 @@ void setup_esc()
 
 }
 
-void send_pos_motors_to_esc(){
+void write_pos_motors_to_esc(){
   int16_t motors_position_int16[8] = {0};
   for(int i =0;i<8;i++){
     if (motors_position[i] > 1.0) motors_position[i] = 1.0; //check that the position are in -1 to 1
@@ -129,10 +128,15 @@ void send_test_esc() {
 void setup() {
   Serial.begin(baud_rate);
   Wire.begin();
-  pinMode(fan_pin, OUTPUT);
+  
   pinMode(led1_pin, OUTPUT);
   pinMode(led2_pin, OUTPUT);
-  digitalWrite(fan_pin,LOW);
+
+
+  ledcSetup(FAN_PWM_CHANEL, 150, 8); // configure FAN PWM at 150 Hz at 8 bits resolution
+  
+  ledcAttachPin(fan_pin, FAN_PWM_CHANEL);  // attach the channel to the GPIO
+  ledcWrite(FAN_PWM_CHANEL, FAN_DUTY_CYCLE);  // set duty cycle of the fan
 
   setup_esc();
   setup_screen();
@@ -141,7 +145,8 @@ void setup() {
 }
 
 void loop() {
-  send_pos_motors_to_esc();
+  
+  write_pos_motors_to_esc();
   read_analog_input();
   read_IMU();
   read_motor_position();

@@ -67,7 +67,7 @@ network:
           via: 192.168.1.1
 ```
 
-Apply the configuration:
+Apply the configuration (NEED TO BE ADDED TO BASHRC??):
 
 ```bash
 sudo netplan apply
@@ -80,6 +80,18 @@ Ping the Ubuntu computer from the Raspberry Pi:
 ```bash
 ping 192.168.1.1
 ```
+
+Ping the raspberry from the Ubuntu computer 
+
+```bash
+ping 192.168.1.2
+```
+
+Then ssh to the raspberry :
+```bash
+ssh pi@192.168.1.2
+```
+password for pi is raspberry
 
 ## Setting Up ROS 2 Humble Environment on Both Devices
 
