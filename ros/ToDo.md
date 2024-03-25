@@ -11,3 +11,14 @@ todo :
 - add a fan control
 - average reading on the esp
 - add a low bat led state flashing
+- safety 0 twist message if closing control_ps4
+
+
+First test in the pool (25/03/24):
+- need a startup file to launch multiple terminals + start ssh
+- M3, M7, x forward, z rotation and others? are reversed
+- loose connection with controller
+- need to add a safety if the controller is disconnected (send 0 command and try to reconnect it) => ok
+- display controller battery and warning if disconnected
+- need more power, increase max esc command
+- reduce rate on z rotation

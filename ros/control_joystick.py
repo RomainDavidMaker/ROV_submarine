@@ -17,6 +17,8 @@ class JoystickControlNode(Node):
         self.joystick = pygame.joystick.Joystick(0)
         self.joystick.init()
 
+        self.joystick_connected = True
+
         # Light toggle state and button press tracking
         self.light_state = [0.0, 0.0]  #  two lights, initially off
         self.last_x_pressed = False
@@ -30,6 +32,54 @@ class JoystickControlNode(Node):
         self.rate = 0.5  # Starting at a midpoint value
         self.last_left_pressed = False
         self.last_right_pressed = False
+
+        print("PS4 Controller Battery Level:", self.joystick.get_power_level())
+
+    def check_connection(self):
+        pygame.event.pump()  # Process event queue
+        reconnection_attempted = False
+
+        for event in pygame.event.get():
+            if event.type == pygame.JOYDEVICEREMOVED:
+                print("Joystick disconnected.")
+                self.publisher_.publish(Twist()) # send a  twist message equal to 0
+                self.joystick_connected = False
+            elif event.type == pygame.JOYDEVICEADDED and not reconnection_attempted:
+                print("Joystick connection detected, attempting to reconnect...")
+                pygame.time.wait(1000)  # Wait for 1 second
+                pygame.joystick.quit()
+                pygame.joystick.init()
+                if pygame.joystick.get_count() > 0:
+                    self.joystick = pygame.joystick.Joystick(0)
+                    self.joystick.init()
+                    if self.joystick.get_init():
+                        print("Joystick reconnected.")
+                        self.joystick_connected = True
+                        reconnection_attempted = True  # Prevent multiple reconnections
+                    else:
+                        print("Failed to reconnect the joystick.")
+                else:
+                    print("Failed to detect any joystick for reconnection.")
+
+        # If the joystick was previously disconnected and not yet reconnected
+        if not self.joystick_connected and not reconnection_attempted:
+            pygame.joystick.quit()
+            pygame.joystick.init()
+            if pygame.joystick.get_count() > 0:
+                self.joystick = pygame.joystick.Joystick(0)
+                self.joystick.init()
+                if self.joystick.get_init():
+                    print("Joystick reconnected.")
+                    self.joystick_connected = True
+                else:
+                    print("Failed to initialize joystick.")
+            else:
+                print("No joystick found. Please connect the joystick.")
+
+        pygame.event.clear()  # Clear the event queue to prevent reprocessing the same events
+
+
+
 
     def deadband(self, value):
         # If the absolute value is less than the threshold, return 0
@@ -115,7 +165,7 @@ class JoystickControlNode(Node):
         # Increase rate if D-pad right is pressed
         if d_pad[0] == 1 and not self.last_right_pressed:
             self.rate = min(1.0, self.rate + 0.1)
-            print("rate increased to: " + str(self.rate))
+            print("rate increased to: " + str(round(self.rate * 100))+"%")
             self.last_right_pressed = True
         elif d_pad[0] != 1:
             self.last_right_pressed = False
@@ -123,7 +173,7 @@ class JoystickControlNode(Node):
         # Decrease rate if D-pad left is pressed
         if d_pad[0] == -1 and not self.last_left_pressed:
             self.rate = max(0.1, self.rate - 0.1)
-            print("rate decreased to: " + str(self.rate))
+            print("rate decreased to: " + str(round(self.rate * 100))+"%")
             self.last_left_pressed = True
         elif d_pad[0] != -1:
             self.last_left_pressed = False
@@ -136,11 +186,14 @@ def main(args=None):
 
     try:
         while rclpy.ok():
-            rclpy.spin_once(joystick_control_node, timeout_sec=0.1)
-            joystick_control_node.read_joystick()
+            joystick_control_node.check_connection()  # Check and handle connection
+            if joystick_control_node.joystick_connected:
+                rclpy.spin_once(joystick_control_node, timeout_sec=0.1)
+                joystick_control_node.read_joystick()
     except KeyboardInterrupt:
         pass
     finally:
+        
         joystick_control_node.destroy_node()
         rclpy.shutdown()
         pygame.quit()
