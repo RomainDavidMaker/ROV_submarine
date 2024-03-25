@@ -3,6 +3,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 import pygame
 from std_msgs.msg import Float32MultiArray
+import time
 
 class JoystickControlNode(Node):
     def __init__(self):
@@ -16,6 +17,10 @@ class JoystickControlNode(Node):
         pygame.joystick.init()
         self.joystick = pygame.joystick.Joystick(0)
         self.joystick.init()
+        self.joystick.rumble(0,1,1) # reumble at start
+
+        self.ratio_angular_linear = .5  #ratio command rad/s to m/s, if it rotates to fast and move to slow, deacrese it
+
 
         self.joystick_connected = True
 
@@ -54,6 +59,7 @@ class JoystickControlNode(Node):
                     self.joystick.init()
                     if self.joystick.get_init():
                         print("Joystick reconnected.")
+                        self.joystick.rumble(0,1,1) # reumble at start
                         self.joystick_connected = True
                         reconnection_attempted = True  # Prevent multiple reconnections
                     else:
@@ -70,11 +76,13 @@ class JoystickControlNode(Node):
                 self.joystick.init()
                 if self.joystick.get_init():
                     print("Joystick reconnected.")
+                    
                     self.joystick_connected = True
                 else:
                     print("Failed to initialize joystick.")
             else:
                 print("No joystick found. Please connect the joystick.")
+                time.sleep(2)
 
         pygame.event.clear()  # Clear the event queue to prevent reprocessing the same events
 
@@ -130,11 +138,11 @@ class JoystickControlNode(Node):
         
         # Apply deadband to joystick axes
         twist.linear.x = self.rate * ( - self.deadband(self.joystick.get_axis(1)) )
-        twist.linear.y = self.rate * ( - self.deadband(self.joystick.get_axis(0)) )
+        twist.linear.y = 0.6 * ( self.rate * ( float(self.joystick.get_button(4)- self.joystick.get_button(5)) ) ) #add a multiplier for the button
         twist.linear.z = self.rate * ( (self.deadband(self.joystick.get_axis(2))+1)/2.0 - (self.deadband(self.joystick.get_axis(5))+1)/2.0 )
-        twist.angular.x = self.rate * ( self.deadband(self.joystick.get_axis(3)) )
-        twist.angular.y = self.rate * ( - self.deadband(self.joystick.get_axis(4)) )
-        twist.angular.z = self.rate * ( float(self.joystick.get_button(4)- self.joystick.get_button(5)) )
+        twist.angular.x = self.ratio_angular_linear * self.rate * ( self.deadband(self.joystick.get_axis(3)) ) 
+        twist.angular.y = self.ratio_angular_linear * self.rate * ( - self.deadband(self.joystick.get_axis(4)) )
+        twist.angular.z = self.ratio_angular_linear * self.rate * ( - self.deadband(self.joystick.get_axis(0)) ) 
         self.publisher_.publish(twist)
 
 

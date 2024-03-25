@@ -54,7 +54,7 @@ M4           M3
 #define SCREEN_HEIGHT 64
 
 
-#define ESC_MAX 250  //max command to the motor 0 to 999 (default 250)
+#define ESC_MAX 600  //max command to the motor 0 to 999 (default 250)
 
 
 /* MOTOR DIRECTION 
@@ -67,13 +67,13 @@ CW           CCW
 */
 
 #define ESC1_REVERSE true 
-#define ESC2_REVERSE true
-#define ESC3_REVERSE false
-#define ESC4_REVERSE true
+#define ESC2_REVERSE false
+#define ESC3_REVERSE true
+#define ESC4_REVERSE false
 #define ESC5_REVERSE true
-#define ESC6_REVERSE true
-#define ESC7_REVERSE false
-#define ESC8_REVERSE true
+#define ESC6_REVERSE false
+#define ESC7_REVERSE true
+#define ESC8_REVERSE false
 
 
 #define FAN_PWM_CHANEL 15    // default (15)

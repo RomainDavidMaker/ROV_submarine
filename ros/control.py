@@ -23,15 +23,14 @@ Mode horizon:
 
 """
 
-
-
-
 import numpy as np
 import rclpy
 import tf
 from rclpy.node import Node
 from geometry_msgs.msg import Twist, Quaternion
 from simple_pid import PID
+
+
 
 class ControlNode(Node):
     def __init__(self):
@@ -51,18 +50,37 @@ class ControlNode(Node):
         self.publisher_ = self.create_publisher(Twist, 'command_motor', 10)
 
         # Initialize control mode parameter
-        self.declare_parameter('control_mode', 'direct')  # Default mode is 'direct'
-
+        self.declare_parameter('control_mode', 'horizon')  # Default mode is 'direct' other modes: 'horizon'
+        print('control_mode: ' + self.get_parameter('control_mode').value)
         # Current orientation placeholder
         self.current_orientation = Quaternion()
 
+        self.q_horizon =  Quaternion(w=0.0, x=1.0, y=0.0, z=0.0)
+
         # Initialize PID controllers for x, y, z axes
-        self.pid_x = PID(1, 0.1, 0.05, setpoint=0)  # Tune these values
-        self.pid_y = PID(1, 0.1, 0.05, setpoint=0)
-        self.pid_z = PID(1, 0.1, 0.05, setpoint=0)
+        self.pid_x = PID(1, 0., 0.0, setpoint=0)  # Tune these values
+        self.pid_y = PID(1, 0., 0.0, setpoint=0)
+        self.pid_z = PID(1, 0., 0.0, setpoint=0)
+
+        # Safety feature turn off motors if no command received for more than .5s
+        self.last_msg_time = self.get_clock().now()
+        self.safety_timer = self.create_timer(0.5, self.check_command_timeout)
+
+        # Safety feature to switch to direct mode if no orientation data for more than .5s
+        self.last_orientation_time = self.get_clock().now()
 
     def joystick_callback(self, msg):
+        self.last_msg_time = self.get_clock().now()  # Reset timer on new message
         control_mode = self.get_parameter('control_mode').value
+
+        if control_mode != 'direct':
+            # Check for the last time orientation data was received
+            current_time = self.get_clock().now()
+            if (current_time - self.last_orientation_time).nanoseconds > 0.5 * 1e9:
+                # Switch to 'direct' mode if no orientation data for more than 0.5 seconds
+                print("lost orientation data, switch to direct mode")
+                self.set_parameters([rclpy.parameter.Parameter('control_mode', rclpy.parameter.Parameter.Type.STRING, 'direct')])
+
 
         if control_mode == 'direct':
             self.handle_direct_mode(msg)
@@ -71,13 +89,22 @@ class ControlNode(Node):
         elif control_mode == 'horizon':
             self.handle_horizon_mode(msg)
 
+    def check_command_timeout(self):
+        current_time = self.get_clock().now()
+        if (current_time - self.last_msg_time).nanoseconds > 0.5 * 1e9:
+            # More than 0.5 seconds have passed since the last message
+            print("lost control command, turn off motors")
+            self.publisher_.publish(Twist())
+
     def orientation_callback(self, msg):
         self.current_orientation = msg
+        self.last_orientation_time = self.get_clock().now()  # Update orientation timer
+
 
     def compute_error(self, q, q_target):
         q_inv = tf.transformations.quaternion_inverse([q.x, q.y, q.z, q.w])
         q_error = tf.transformations.quaternion_multiply(q_inv, [q_target.x, q_target.y, q_target.z, q_target.w])
-        error_euler = tf.transformations.euler_from_quaternion(q_error)
+        error_euler = tf.transformations.quaternion_from_euler(q_error)
         return error_euler
 
     def handle_direct_mode(self, twist_msg):
@@ -89,7 +116,7 @@ class ControlNode(Node):
         pass
 
     def handle_horizon_mode(self, twist_msg):
-        q_horizon = self.get_parameter('q_horizon').value
+        q_horizon = self.q_horizon
         q_additional_rotation = self.compute_additional_rotation(twist_msg)
         q_target = tf.transformations.quaternion_multiply(q_horizon, q_additional_rotation)
 
