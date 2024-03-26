@@ -25,7 +25,7 @@ Mode horizon:
 
 import numpy as np
 import rclpy
-import tf
+import transformations
 from rclpy.node import Node
 from geometry_msgs.msg import Twist, Quaternion
 from simple_pid import PID
@@ -50,7 +50,7 @@ class ControlNode(Node):
         self.publisher_ = self.create_publisher(Twist, 'command_motor', 10)
 
         # Initialize control mode parameter
-        self.declare_parameter('control_mode', 'horizon')  # Default mode is 'direct' other modes: 'horizon'
+        self.declare_parameter('control_mode', 'direct')  # Default mode is 'direct' other modes: 'horizon'
         print('control_mode: ' + self.get_parameter('control_mode').value)
         # Current orientation placeholder
         self.current_orientation = Quaternion()
@@ -102,10 +102,17 @@ class ControlNode(Node):
 
 
     def compute_error(self, q, q_target):
-        q_inv = tf.transformations.quaternion_inverse([q.x, q.y, q.z, q.w])
-        q_error = tf.transformations.quaternion_multiply(q_inv, [q_target.x, q_target.y, q_target.z, q_target.w])
-        error_euler = tf.transformations.quaternion_from_euler(q_error)
+        # Calculate the inverse of the current orientation
+        q_inv = transformations.quaternion_inverse([q.x, q.y, q.z, q.w])
+
+        # Compute the error quaternion
+        q_error = transformations.quaternion_multiply(q_inv, [q_target.x, q_target.y, q_target.z, q_target.w])
+
+        # Convert the error quaternion to Euler angles (roll, pitch, yaw)
+        error_euler = transformations.euler_from_quaternion(q_error)
+
         return error_euler
+
 
     def handle_direct_mode(self, twist_msg):
         self.publisher_.publish(twist_msg)
@@ -113,36 +120,65 @@ class ControlNode(Node):
     def handle_angle_mode(self, twist_msg):
         # Implement angle mode control logic
         # Define q_target based on twist_msg and compute error
-        pass
+        raise NotImplementedError # TODO
 
     def handle_horizon_mode(self, twist_msg):
-        q_horizon = self.q_horizon
+        """
+        Handles the 'horizon' control mode.
+        In this mode, the ROV adjusts its orientation to maintain a horizontal position 
+        while also considering the joystick input for direction.
+        The function computes a target orientation based on the input command and the 
+        desired horizontal orientation, calculates the error from the current orientation, 
+        and then applies PID control to stabilize the ROV in the desired orientation.
+        """
+
+        # Convert the predefined horizontal quaternion orientation from ROS Quaternion to a list format
+        q_horizon_list = [self.q_horizon.x, self.q_horizon.y, self.q_horizon.z, self.q_horizon.w]
+
+        # Compute an additional rotation quaternion based on the joystick input (Twist message)
         q_additional_rotation = self.compute_additional_rotation(twist_msg)
-        q_target = tf.transformations.quaternion_multiply(q_horizon, q_additional_rotation)
 
-        q_error = self.compute_error(self.current_orientation, q_target)
-        stabilization_twist = self.compute_twist_for_stabilization(q_error)
+        # Perform quaternion multiplication to find the target orientation
+        # This combines the horizontal orientation with the joystick-induced rotation
+        q_target_list = transformations.quaternion_multiply(q_horizon_list, q_additional_rotation)
 
+        # Convert the target orientation from list format back to ROS Quaternion message
+        q_target = Quaternion()
+        q_target.x = q_target_list[0]
+        q_target.y = q_target_list[1]
+        q_target.z = q_target_list[2]
+        q_target.w = q_target_list[3]
+
+        # Calculate the orientation error between the current orientation and the target
+        error_euler = self.compute_error(self.current_orientation, q_target)
+
+        # Compute a stabilization twist (angular velocity) using PID controllers based on the orientation error
+        stabilization_twist = self.compute_twist_for_stabilization(error_euler)
+
+        # Prepare the final command to be sent to the motors
+        # This combines the linear motion command from the joystick with the stabilization twist for angular motion
         combined_twist = Twist()
         combined_twist.linear = twist_msg.linear
         combined_twist.angular.x += stabilization_twist.angular.x
         combined_twist.angular.y += stabilization_twist.angular.y
         combined_twist.angular.z += stabilization_twist.angular.z
 
+        # Publish the combined twist message to control the motors
         self.publisher_.publish(combined_twist)
+
 
     def compute_additional_rotation(self, twist_msg):
         # Convert the angular part of twist_msg to a quaternion
-        # Assuming that twist_msg.angular.{x, y, z} are roll, pitch, yaw rates
         roll, pitch, yaw = twist_msg.angular.x, twist_msg.angular.y, twist_msg.angular.z
-        q_rot = tf.transformations.quaternion_from_euler(roll, pitch, yaw)
-        return q_rot
+        q_rot = transformations.quaternion_from_euler(roll, pitch, yaw)
+        return q_rot  # Ensure this is a list or NumPy array
 
-    def compute_twist_for_stabilization(self, q_error):
+
+    def compute_twist_for_stabilization(self, error_euler):
         twist = Twist()
-        twist.angular.x = self.pid_x(q_error[0])
-        twist.angular.y = self.pid_y(q_error[1])
-        twist.angular.z = self.pid_z(q_error[2])
+        twist.angular.x = self.pid_x(error_euler[0])
+        twist.angular.y = self.pid_y(error_euler[1])
+        twist.angular.z = self.pid_z(error_euler[2])
         return twist
 
 def main(args=None):
