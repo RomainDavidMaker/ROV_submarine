@@ -161,7 +161,7 @@ class ControlNode(Node):
         combined_twist.linear = twist_msg.linear
         
         combined_twist.angular.x -= stabilization_twist.angular.x  # attention to the sign
-        combined_twist.angular.y -= stabilization_twist.angular.y
+        combined_twist.angular.y += stabilization_twist.angular.y
 
 
         combined_twist.angular.z += twist_msg.angular.z  #no control on the z axis rotation
@@ -175,7 +175,7 @@ class ControlNode(Node):
 
     def compute_additional_rotation(self, twist_msg):
         # Convert the angular part of twist_msg to a quaternion
-        roll, pitch, yaw = twist_msg.angular.x, twist_msg.angular.y, twist_msg.angular.z
+        roll, pitch, yaw = twist_msg.angular.x, -twist_msg.angular.y, -twist_msg.angular.z
         q_rot = transformations.quaternion_from_euler(roll, pitch, yaw)
         return q_rot  # Ensure this is a list or NumPy array
 

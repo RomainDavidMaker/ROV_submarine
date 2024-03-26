@@ -78,7 +78,7 @@ class MotorLightSender(Node):
             self.get_logger().warn('Received less than 2 values for light control')
 
     def send_serial_data(self):
-        data_str = ';'.join(map(str, self.commands)) + '\n'
+        data_str = ';'.join(f"{command:.4f}" for command in self.commands) + '\n'
         self.serial_port.write(data_str.encode('utf-8'))
         self.get_logger().info(f'Sending data to serial: {data_str}')
 

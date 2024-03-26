@@ -12,9 +12,10 @@ class SensorReader(Node):
         self.publisher_ = self.create_publisher(Float32MultiArray, 'sensor_values', 10)
         self.orientation_publisher = self.create_publisher(Quaternion, 'orientation', 10)
         self.serial_port = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
-        self.timer = self.create_timer(0.1, self.timer_callback)
+        self.timer = self.create_timer(0.02, self.timer_callback)
 
     def timer_callback(self):
+        
         if self.serial_port.in_waiting > 0:
             serial_data = self.serial_port.readline().decode('utf-8').rstrip()
             try:
