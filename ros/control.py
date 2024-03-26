@@ -58,8 +58,8 @@ class ControlNode(Node):
         self.q_horizon =  Quaternion(w=0.0, x=0.05, y=-0.72, z=0.69)
 
         # Initialize PID controllers for x, y, z axes
-        self.pid_x = PID(1, 0., 0.0, setpoint=0)  # Tune these values
-        self.pid_y = PID(1, 0., 0.0, setpoint=0)
+        self.pid_x = PID(0.5, 0., 0.05, setpoint=0)  # Tune these values
+        self.pid_y = PID(0.5, 0., 0.05, setpoint=0)
         self.pid_z = PID(0.0, 0., 0.0, setpoint=0)
 
         # Safety feature turn off motors if no command received for more than .5s

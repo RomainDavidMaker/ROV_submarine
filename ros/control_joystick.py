@@ -19,8 +19,8 @@ class JoystickControlNode(Node):
         self.joystick.init()
         self.joystick.rumble(0,1,1) # reumble at start
 
-        self.ratio_angular_linear = .5  #ratio command rad/s to m/s, if it rotates to fast and move to slow, deacrese it
-
+        self.ratio_angular_xy = .5  #ratio rad/s to m/s for x and y axis, if it rotates to fast and move to slow, decrease it
+        self.ratio_angular_z = .2  #ratio rad/s to m/s for z axis, if it rotates to fast and move to slow, decrease it
 
         self.joystick_connected = True
 
@@ -140,9 +140,9 @@ class JoystickControlNode(Node):
         twist.linear.x = self.rate * ( - self.deadband(self.joystick.get_axis(1)) )
         twist.linear.y = 0.6 * ( self.rate * ( float(self.joystick.get_button(4)- self.joystick.get_button(5)) ) ) #add a multiplier for the button
         twist.linear.z = self.rate * ( (self.deadband(self.joystick.get_axis(2))+1)/2.0 - (self.deadband(self.joystick.get_axis(5))+1)/2.0 )
-        twist.angular.x = self.ratio_angular_linear * self.rate * ( self.deadband(self.joystick.get_axis(3)) ) 
-        twist.angular.y = self.ratio_angular_linear * self.rate * ( - self.deadband(self.joystick.get_axis(4)) )
-        twist.angular.z = self.ratio_angular_linear * self.rate * ( - self.deadband(self.joystick.get_axis(0)) ) 
+        twist.angular.x = self.ratio_angular_xy * self.rate * ( self.deadband(self.joystick.get_axis(3)) ) 
+        twist.angular.y = self.ratio_angular_xy * self.rate * ( - self.deadband(self.joystick.get_axis(4)) )
+        twist.angular.z = self.ratio_angular_z * self.rate * ( - self.deadband(self.joystick.get_axis(0)) ) 
         self.publisher_.publish(twist)
 
 

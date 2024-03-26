@@ -28,3 +28,11 @@ Second test in the pool:
 - check buoyancy need to add foam
 - check motors direction
 - add to the control node a safety to set a 0 twist if no command received
+
+Test3:
+- added a bottle for buoyancy, almost 1L, added on the top of the sub, gived a lot of stabilisation
+- tried horinzon stab, PID around (.5, 0, .1), instable at some point, the bottle does most of the stabilisation
+- possible to rely mostly on the buoyancy for the stabilisation
+
+
+

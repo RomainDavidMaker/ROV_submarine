@@ -150,8 +150,9 @@ void loop() {
   }
 
   if (millis() - t_screen > send_rate_ms) {
-    if(t%6000 <3000) display_motors();
-    else display_sensors();
+    //if(t%6000 <3000) display_motors();
+    //else display_sensors();
+    display_sensors();
     t_screen = millis();
   }
 
@@ -220,39 +221,40 @@ void read_IMU(){
   if (
   IMU.dataAvailable() == true)
   {
-    q0 = IMU.getQuatReal();
     q1 = IMU.getQuatI();
     q2 = IMU.getQuatJ();
     q3 = IMU.getQuatK();
+    q0 = IMU.getQuatReal();
   }
 }
 
 void send_sensor_values(){
-  Serial.print(pressure);
+  Serial.print(pressure, 3);
   Serial.print(";");
-  Serial.print(voltage);
+  Serial.print(voltage, 2);
   Serial.print(";");
-  Serial.print(current);
+  Serial.print(current, 4);
   Serial.print(";");
-  Serial.print(temp_ext);
+  Serial.print(temp_ext, 1);
   Serial.print(";");
-  Serial.print(temp_bat);
+  Serial.print(temp_bat, 1);
   Serial.print(";");
-  Serial.print(temp_esc);
+  Serial.print(temp_esc, 1);
   Serial.print(";");
-  Serial.print(leak);
+  Serial.print(leak, 3);
   Serial.print(";");
-  Serial.print(q0);
+  Serial.print(q0, 4);
   Serial.print(";");
-  Serial.print(q1);
+  Serial.print(q1, 4);
   Serial.print(";");
-  Serial.print(q2);
+  Serial.print(q2, 4);
   Serial.print(";");
-  Serial.print(q3);
+  Serial.print(q3, 4);
   Serial.print(";");
-  Serial.print(sonar_distance);
+  Serial.print(sonar_distance, 4);
   Serial.println();
 }
+
 
 float read_ntc_temp(int ntc_pin) { 
   #define U_0 3.3               //voltage when the adc reach 4095 (need to be calibrated)
