@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray  # Using Float32MultiArray to send multiple float values
+from geometry_msgs.msg import Quaternion
 import serial
 import sys
 
@@ -9,6 +10,7 @@ class SensorReader(Node):
         super().__init__('sensor_reader')
         # Publisher for an array of floats
         self.publisher_ = self.create_publisher(Float32MultiArray, 'sensor_values', 10)
+        self.orientation_publisher = self.create_publisher(Quaternion, 'orientation', 10)
         self.serial_port = serial.Serial('/dev/ttyUSB0', 115200, timeout=1)
         self.timer = self.create_timer(0.1, self.timer_callback)
 
@@ -19,8 +21,12 @@ class SensorReader(Node):
                 # Splitting the comma-separated values
                 pressure, tension, current, t_ext, t_bat, t_esc, leak, q0, q1, q2, q3, d_sonar = map(float, serial_data.split(';'))
                 msg = Float32MultiArray()
-                msg.data = [pressure, tension, current, t_ext, t_bat, t_esc, leak, q0, q1, q2, q3, d_sonar]
+                msg.data = [pressure, tension, current, t_ext, t_bat, t_esc, leak, d_sonar]
                 self.publisher_.publish(msg)
+
+                orientation_msg = Quaternion(x=q0, y=q1, z=q2, w=q3)  # Assuming next 4 values are quaternion
+                self.orientation_publisher.publish(orientation_msg)
+
                 self.get_logger().info(
                 f'Pressure: {pressure} atm, Tension: {tension} V, Current: {current} mA, '
                 f'External Temp: {t_ext} °C, Battery Temp: {t_bat} °C, ESC Temp: {t_esc} °C, '

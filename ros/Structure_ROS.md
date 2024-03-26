@@ -23,7 +23,7 @@ Check the drawing on Google Drive:
 ![alt text](graph.png)
 
 ### SENSOR
-- The node `sensor_reader` sends the sensor values to the topic `sensor_values`.
+- The node `sensor_reader` sends the sensor values to the topic `sensor_values` and the orientation to the topic 'orientation' with a message type quaternion.
 - The node `sensor_display` displays the sensor values from the topic `sensor_values`.
 - The topic `sensor_values` is a message of the type `Float32MultiArray` (pressure, tension, etc.).
 - The ESP32 sends via the serial a string with floats separated by `;` ending with `/n`.

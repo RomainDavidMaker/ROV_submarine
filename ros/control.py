@@ -50,12 +50,12 @@ class ControlNode(Node):
         self.publisher_ = self.create_publisher(Twist, 'command_motor', 10)
 
         # Initialize control mode parameter
-        self.declare_parameter('control_mode', 'direct')  # Default mode is 'direct' other modes: 'horizon'
+        self.declare_parameter('control_mode', 'horizon')  # Default mode is 'direct' other modes: 'horizon'
         print('control_mode: ' + self.get_parameter('control_mode').value)
         # Current orientation placeholder
         self.current_orientation = Quaternion()
 
-        self.q_horizon =  Quaternion(w=0.05, x=-0.72, y=0.69, z=0.0)
+        self.q_horizon =  Quaternion(w=0.0, x=0.05, y=-0.72, z=0.69)
 
         # Initialize PID controllers for x, y, z axes
         self.pid_x = PID(1, 0., 0.0, setpoint=0)  # Tune these values
@@ -159,9 +159,15 @@ class ControlNode(Node):
         # This combines the linear motion command from the joystick with the stabilization twist for angular motion
         combined_twist = Twist()
         combined_twist.linear = twist_msg.linear
-        combined_twist.angular.x += stabilization_twist.angular.x
-        combined_twist.angular.y += stabilization_twist.angular.y
-        combined_twist.angular.z += stabilization_twist.angular.z
+        
+        combined_twist.angular.x -= stabilization_twist.angular.x  # attention to the sign
+        combined_twist.angular.y -= stabilization_twist.angular.y
+
+
+        combined_twist.angular.z += twist_msg.angular.z  #no control on the z axis rotation
+
+
+        print("(roll, pitch, yaw) orientation: " ,[round(item,2) for item in transformations.euler_from_quaternion([self.current_orientation.x, self.current_orientation.y, self.current_orientation.z, self.current_orientation.w])] ,"  target: ",[round(item,2) for item in transformations.euler_from_quaternion(q_target_list)], "  error: ", [round(item,2) for item in error_euler])
 
         # Publish the combined twist message to control the motors
         self.publisher_.publish(combined_twist)
