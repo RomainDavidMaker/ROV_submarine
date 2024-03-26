@@ -164,7 +164,7 @@ class ControlNode(Node):
         combined_twist.angular.y += stabilization_twist.angular.y
 
 
-        combined_twist.angular.z += twist_msg.angular.z  #no control on the z axis rotation
+        combined_twist.angular.z += twist_msg.angular.z  #no pid control on the z axis rotation
 
 
         print("(roll, pitch, yaw) orientation: " ,[round(item,2) for item in transformations.euler_from_quaternion([self.current_orientation.x, self.current_orientation.y, self.current_orientation.z, self.current_orientation.w])] ,"  target: ",[round(item,2) for item in transformations.euler_from_quaternion(q_target_list)], "  error: ", [round(item,2) for item in error_euler])
