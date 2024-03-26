@@ -44,7 +44,7 @@ void setup_esc()
   esc6.install(esc6_pin, RMT_CHANNEL_5);
   esc7.install(esc7_pin, RMT_CHANNEL_6);
   esc8.install(esc8_pin, RMT_CHANNEL_7);
-
+  
 	esc1.init();
   esc2.init();
   esc3.init();
@@ -54,14 +54,7 @@ void setup_esc()
   esc7.init();
   esc8.init();
 
-	esc1.setReversed(ESC1_REVERSE);
-  esc2.setReversed(ESC2_REVERSE);
-  esc3.setReversed(ESC3_REVERSE);
-  esc4.setReversed(ESC4_REVERSE);
-  esc5.setReversed(ESC5_REVERSE);
-  esc6.setReversed(ESC6_REVERSE);
-  esc7.setReversed(ESC7_REVERSE);
-  esc8.setReversed(ESC8_REVERSE);
+
 
 	esc1.set3DMode(true);
   esc2.set3DMode(true);
@@ -94,14 +87,14 @@ void write_pos_motors_to_esc(){
     motors_position_int16[i] = (int16_t)(motors_position[i]*ESC_MAX);
   }
 
-  esc1.sendThrottle3D(motors_position_int16[0]);
-  esc2.sendThrottle3D(motors_position_int16[1]);
-  esc3.sendThrottle3D(motors_position_int16[2]);
-  esc4.sendThrottle3D(motors_position_int16[3]);
-  esc5.sendThrottle3D(motors_position_int16[4]);
-  esc6.sendThrottle3D(motors_position_int16[5]);
-  esc7.sendThrottle3D(motors_position_int16[6]);
-  esc8.sendThrottle3D(motors_position_int16[7]);
+  esc1.sendThrottle3D(motors_position_int16[0] * ESC1_REVERSE);
+  esc2.sendThrottle3D(motors_position_int16[1]* ESC2_REVERSE);
+  esc3.sendThrottle3D(motors_position_int16[2]* ESC3_REVERSE);
+  esc4.sendThrottle3D(motors_position_int16[3]* ESC4_REVERSE);
+  esc5.sendThrottle3D(motors_position_int16[4]* ESC5_REVERSE);
+  esc6.sendThrottle3D(motors_position_int16[5]* ESC6_REVERSE);
+  esc7.sendThrottle3D(motors_position_int16[6]* ESC7_REVERSE);
+  esc8.sendThrottle3D(motors_position_int16[7]* ESC8_REVERSE);
 
 }
 

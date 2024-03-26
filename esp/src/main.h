@@ -66,14 +66,14 @@ CW           CCW
 
 */
 
-#define ESC1_REVERSE true 
-#define ESC2_REVERSE false
-#define ESC3_REVERSE true
-#define ESC4_REVERSE false
-#define ESC5_REVERSE true
-#define ESC6_REVERSE false
-#define ESC7_REVERSE true
-#define ESC8_REVERSE false
+#define ESC1_REVERSE -1.0 
+#define ESC2_REVERSE -1.0
+#define ESC3_REVERSE 1.0
+#define ESC4_REVERSE -1.0
+#define ESC5_REVERSE -1.0
+#define ESC6_REVERSE -1.0
+#define ESC7_REVERSE 1.0
+#define ESC8_REVERSE -1.0
 
 
 #define FAN_PWM_CHANEL 15    // default (15)
