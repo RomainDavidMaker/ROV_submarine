@@ -55,12 +55,18 @@ class ControlNode(Node):
         # Current orientation placeholder
         self.current_orientation = Quaternion()
 
-        self.q_horizon =  Quaternion(w=0.0, x=0.05, y=-0.72, z=0.69)
+        self.q_horizon =  Quaternion(w=0.0198, x=0.005, y=0.9998, z=0.0007)
+        
+        i = 0.0
+        d = 0.25
 
-        # Initialize PID controllers for x, y, z axes
-        self.pid_x = PID(0.5, 0., 0.05, setpoint=0)  # Tune these values
-        self.pid_y = PID(0.5, 0., 0.05, setpoint=0)
-        self.pid_z = PID(0.0, 0., 0.0, setpoint=0)
+        # Maximum output value for the PID controllers 0 to 1   
+        pid_max_output = 0.2  # Example maximum output value
+
+        # Initialize PID controllers for x, y, z axes with maximum output value
+        self.pid_x = PID(0.3, i, 0.1, setpoint=0, output_limits=(-pid_max_output, pid_max_output))
+        self.pid_y = PID(0.0, i, 0.0, setpoint=0, output_limits=(-pid_max_output, pid_max_output))
+        self.pid_z = PID(0.0, i, 0.0, setpoint=0, output_limits=(-pid_max_output, pid_max_output))
 
         # Safety feature turn off motors if no command received for more than .5s
         self.last_msg_time = self.get_clock().now()

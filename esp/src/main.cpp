@@ -11,7 +11,7 @@ unsigned long t = 0;  //used to send data at constant rate
 unsigned long t_screen = 0;  //used to refresh screen at constant rate
 unsigned long t_last_command = 0;  //time the last command was receive
 
-float current;  //mA
+float current;  //A
 float voltage ; //voltage bat in V
 float pressure; //atm
 float temp_esc,temp_ext,temp_bat;//deg
@@ -131,17 +131,18 @@ void setup() {
   ledcAttachPin(fan_pin, FAN_PWM_CHANEL);  // attach the channel to the GPIO
   ledcWrite(FAN_PWM_CHANEL, FAN_DUTY_CYCLE);  // set duty cycle of the fan
 
-  setup_esc();
+  //setup_esc();
   setup_screen();
-  setup_IMU();
+  //setup_IMU();
   
 }
 
 void loop() {
-  
-  write_pos_motors_to_esc();
   read_analog_input();
-  read_IMU();
+  current = 1.234;
+  voltage = 11.2;
+  //write_pos_motors_to_esc();
+  //read_IMU();
   read_motor_position();
   set_lights();
   if (millis() - t > send_rate_ms) {
@@ -150,8 +151,6 @@ void loop() {
   }
 
   if (millis() - t_screen > send_rate_ms) {
-    //if(t%6000 <3000) display_motors();
-    //else display_sensors();
     display_sensors();
     t_screen = millis();
   }
